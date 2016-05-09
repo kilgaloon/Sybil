@@ -47,7 +47,8 @@ void set_key(STORAGE *storage, char *name, char *value) {
 }
 
 int check_for_storage_size(STORAGE *storage) {
-    if((storage->allowed_memory_size - storage->memory_size) >= 305) {
+    if((storage->allowed_memory_size - storage->memory_size) >= 
+       (storage->allowed_memory_key_size + storage->allowed_memory_value_size)) {
         return 1;
     } else {
         return 0;
