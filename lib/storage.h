@@ -4,11 +4,10 @@
 typedef struct storage {
     char ***data;
     int size;
-    int init_size; // definde in .ini configuration file
     int allowed_memory_key_size; // this is set in .ini configuration file
     int allowed_memory_value_size; // this is set in .ini configuration file
     int memory_size;
-    int allowed_memory_size;
+    int allowed_memory_size; // this is set in .ini configuration file
 } STORAGE;
 
 void storage_init(STORAGE *storage, CONFIG *config);
