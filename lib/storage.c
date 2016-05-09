@@ -37,20 +37,18 @@ void set_key(STORAGE *storage, char *name, char *value) {
 
             int used_memory = ((strlen(name) + strlen(value)) * sizeof(char));
             memory_size_used(storage, used_memory);
-        } else {
-            // place for logging errors
         }
         
-    } else {
-        // place for logging errors
     }
 }
-
+// checking for storage size, is more storage available for storing data or no
 int check_for_storage_size(STORAGE *storage) {
     if((storage->allowed_memory_size - storage->memory_size) >= 
        (storage->allowed_memory_key_size + storage->allowed_memory_value_size)) {
         return 1;
     } else {
+        // log error "No more storage available"
+        error_log("No more available memory size, check your configuration file.");
         return 0;
     }
 }
@@ -78,6 +76,7 @@ int safe_member_initialize(STORAGE *storage, int member) {
             // if is null, memory allocation failed
             if(storage->data[member][0] == NULL)
                 // this is place for function to write errors into log file
+                error_log("Failed to allocate memory for storage data member key.");
                 return 0;
             
             // checking is memory allocated for storage data member
@@ -85,6 +84,7 @@ int safe_member_initialize(STORAGE *storage, int member) {
             // if is null, memory allocation failed
             if(storage->data[member][1] == NULL)
                 // this is place for function to write errors into log file
+                error_log("Failed to allocate memory for storage data member value.");
                 return 0;
             
             // data allocation for next member is available
@@ -95,6 +95,7 @@ int safe_member_initialize(STORAGE *storage, int member) {
         // not available to get memory for storage data
         } else {
             // this is place for function to write errors into log file
+            error_log("Failed to allocate memory for storage data member.");
             return 0;
         }
         
@@ -102,6 +103,7 @@ int safe_member_initialize(STORAGE *storage, int member) {
     // not available to get memory for storage data
     } else {
         // this is place for function to write errors into log file
+        error_log("Failed to allocate memory for storage data.");
         return 0;
     }
 }

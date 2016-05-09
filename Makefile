@@ -1,7 +1,7 @@
 CFLAGS=-Wall -g
 
 compile:
-	gcc -g main.c config.c lib/parser.c lib/storage.c -o sybil
+	gcc -g main.c config.c lib/parser.c lib/storage.c lib/log.c -o sybil
 	
 dir:
 	mkdir /etc/sybil/
@@ -9,6 +9,8 @@ dir:
 	echo "allowed_memory_key_size = 50KB;" >> "/etc/sybil/sybil.ini" 
 	echo "allowed_memory_value_size = 255KB;" >> "/etc/sybil/sybil.ini" 
 	echo "allowed_cache_size = 20M;" >> "/etc/sybil/sybil.ini" 
+	
+	mkdir /var/log/sybil/error.log
 
 clean:
 	rm -f sybil
