@@ -9,9 +9,11 @@ typedef struct storage {
     int memory_size;
     int allowed_memory_size; // this is set in .ini configuration file
 } STORAGE;
-
 void storage_init(STORAGE *storage, CONFIG *config);
-void set_key(STORAGE *storage, char *name, char *value);
+
+void set_key(STORAGE *storage, char *key, char *value);
+int get_key(STORAGE *storage, char *key);
+
 int check_for_storage_size(STORAGE *storage);
 void memory_size_used(STORAGE *storage, int memory);
 int safe_member_initialize(STORAGE *storage, int member);

@@ -6,7 +6,6 @@
 #include "storage.h"
 
 
-
 void storage_init(STORAGE *storage, CONFIG *config) {
     // in next steps we will set storage settings
     storage->size = 0;
@@ -15,10 +14,19 @@ void storage_init(STORAGE *storage, CONFIG *config) {
     storage->memory_size = 0;
     storage->allowed_memory_size = config->allowed_memory_size * 1024; // get this from ini
     
-    safe_member_initialize(storage, 0);
+    // allocating memory for storage data
+    storage->data = calloc(storage->allowed_memory_size, sizeof(char));
+    // check did we succeeded to allocate memory for storage data
+    if(storage->data != NULL) {
+        
+    } else {
+        // this is place for function to write errors into log file
+        error_log("Failed to allocate memory for storage data.");
+    }
+
 }
 
-void set_key(STORAGE *storage, char *name, char *value) { 
+void set_key(STORAGE *storage, char *key, char *value) { 
     // check is there enough memory to be stored
     // and should we proceed with insertion of new key
     int proceed = check_for_storage_size(storage); 
@@ -28,19 +36,35 @@ void set_key(STORAGE *storage, char *name, char *value) {
     if(proceed) {
         // allocated enough memory for next key that will be stored
         int safe_continue = safe_member_initialize(storage, storage->size);
+        int key_exists = get_key(storage, key);
         // at this point we check is it safe to continue to insert data
-        if(safe_continue) {
-            strncpy(storage->data[storage->size][0], value, strlen(value + 1));
-            strncpy(storage->data[storage->size][1], name, strlen(name + 1));
+        if(safe_continue && !key_exists) {
+            strncpy(storage->data[storage->size][0], key, (strlen(key) + 1));
+            strncpy(storage->data[storage->size][1], value, (strlen(value) + 1));
 
             storage->size++;
 
-            int used_memory = ((strlen(name) + strlen(value)) * sizeof(char));
+            int used_memory = ((strlen(key) + strlen(value)) * sizeof(char));
             memory_size_used(storage, used_memory);
         }
         
     }
 }
+
+// get key from storage linear search
+int get_key(STORAGE *storage, char *key) {
+    int i;
+    for(i = 0; i < storage->size; i++) {
+        if(strcmp(storage->data[i][0], key) == 0) {
+            printf("%s", storage->data[i][1]);
+            return 1;
+        } else {
+            printf("Key does not exist!");
+            return 0;
+        }
+    }
+}
+
 // checking for storage size, is more storage available for storing data or no
 int check_for_storage_size(STORAGE *storage) {
     if((storage->allowed_memory_size - storage->memory_size) >= 
@@ -63,48 +87,42 @@ void memory_size_used(STORAGE *storage, int memory) {
 // this functions is going step by step and tries to give memory for 
 // certain locations, if memory isn't allocated will return failed flag
 int safe_member_initialize(STORAGE *storage, int member) {       
-    // allocating memory for storage data
-    storage->data = calloc(storage->allowed_memory_size, sizeof(char));
-    // check did we succeeded to allocate memory for storage data
-    if(storage->data != NULL) {
-        // allocating memory for storage data member
-        storage->data[member] = calloc(storage->allowed_memory_key_size + storage->allowed_memory_value_size, sizeof(char));
+    
+    // allocating memory for storage data member
+    storage->data[member] = calloc(storage->allowed_memory_key_size + storage->allowed_memory_value_size, sizeof(char));
+    // checking is memory allocated for storage data member
+    if(storage->data[member] != NULL) {
         // checking is memory allocated for storage data member
-        if(storage->data[member] != NULL) {
-            // checking is memory allocated for storage data member
-            storage->data[member][0] = calloc(storage->allowed_memory_key_size, sizeof(char));
-            // if is null, memory allocation failed
-            if(storage->data[member][0] == NULL)
-                // this is place for function to write errors into log file
-                error_log("Failed to allocate memory for storage data member key.");
-                return 0;
-            
+        storage->data[member][0] = calloc(storage->allowed_memory_key_size, sizeof(char));
+        // if is null, memory allocation failed
+        if(storage->data[member][0] != NULL) {
             // checking is memory allocated for storage data member
             storage->data[member][1] = calloc(storage->allowed_memory_value_size, sizeof(char));
             // if is null, memory allocation failed
-            if(storage->data[member][1] == NULL)
-                // this is place for function to write errors into log file
+            if(storage->data[member][1] != NULL) {
+                // data allocation for next member is available
+                // return flag that next member can be safely set
+                return 1;
+            } else {
+               // this is place for function to write errors into log file
                 error_log("Failed to allocate memory for storage data member value.");
-                return 0;
-            
-            // data allocation for next member is available
-            // return flag that next member can be safely set
-            return 1;
-           
-        // failure is here
-        // not available to get memory for storage data
+                return 0; 
+            }      
+
         } else {
             // this is place for function to write errors into log file
-            error_log("Failed to allocate memory for storage data member.");
+            error_log("Failed to allocate memory for storage data member key.");
             return 0;
         }
-        
+
+
     // failure is here
     // not available to get memory for storage data
     } else {
         // this is place for function to write errors into log file
-        error_log("Failed to allocate memory for storage data.");
+        error_log("Failed to allocate memory for storage data member.");
         return 0;
     }
+    
 }
 
