@@ -16,12 +16,11 @@ int main() {
     // test
 
     set_key(&storage, "testKey", "something");
+    set_key(&storage, "testKey1", "something");
     
-    get_key(&storage, "testKey");
-
+    delete_key(&storage, "testKey1");
     
-
-
+    get_key(&storage, "testKey", 1);
     
     return 0;
 }

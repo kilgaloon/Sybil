@@ -8,15 +8,22 @@ typedef struct storage {
     int allowed_memory_value_size; // this is set in .ini configuration file
     int memory_size;
     int allowed_memory_size; // this is set in .ini configuration file
+
 } STORAGE;
 void storage_init(STORAGE *storage, CONFIG *config);
 
 void set_key(STORAGE *storage, char *key, char *value);
-int get_key(STORAGE *storage, char *key);
+int get_key(STORAGE *storage, char *key, int prnt);
+void delete_key(STORAGE *storage, char *key);
 
 int check_for_storage_size(STORAGE *storage);
 void memory_size_used(STORAGE *storage, int memory);
 int safe_member_initialize(STORAGE *storage, int member);
+int find_available_index(STORAGE *storage);
+
+//void lost_index_member_init(STORAGE *storage, int index);
+//int available_lost_index(STORAGE *storage);
+//void waste_lost_index(STORAGE *storage, int index);
 
 #endif	/* STORAGE_H */
 
