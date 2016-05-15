@@ -1,7 +1,7 @@
 CFLAGS=-Wall -g
 
 compile:
-	gcc -g main.c config.c lib/parser.c lib/storage.c lib/log.c -o sybil
+	gcc ${CFLAGS} main.c config.c lib/parser.c lib/storage.c lib/log.c -o sybil
 	
 dir:
 	mkdir /etc/sybil/

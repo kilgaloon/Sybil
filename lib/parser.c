@@ -3,9 +3,11 @@
 #include "stdlib.h"
 #include "unistd.h"
 #include "assert.h"
+#include "ctype.h"
 
 // sybil libraries
 #include "parser.h"
+#include "../config.h"
 
 // load and set rules for parser
 RULES loadRules_ini() {
@@ -25,18 +27,26 @@ CONFIG *parseINI(char *inipath) {
     CONFIG *config;
     config = malloc(sizeof(CONFIG));
 
-    const char *ap[3];
-    ap[0] = "allowed_memory_key_size;";
-    ap[1] = "allowed_memory_value_size;";
-    ap[2] = "allowed_memory_size;";
-    ap[3] = "allowed_cache_size;";
+    char *ap[7];
+    ap[0] = "";
+    ap[1] = "allowed_memory_value_size";
+    ap[2] = "allowed_memory_size";
+    ap[3] = "allowed_cache_size";
+    ap[4] = "max_storage_instances";
+    ap[5] = "allowed_memory_key_size";
+    ap[6] = "error_log";
+    
+    // SEGMENTATION FAULT IS HAPPENING WHEN INI FILE HAVE VALUES THAT ARENT PROVIDED IN AP ARRAY
 
     // array that holds memory address of configuration variables
-    int *as[3];
-    as[0] = &config->allowed_memory_key_size;
+    int *as[7];  
+    as[0] = NULL;
     as[1] = &config->allowed_memory_value_size;
     as[2] = &config->allowed_memory_size;
     as[3] = &config->allowed_cache_size;
+    as[4] = &config->max_storage_instances;
+    as[5] = &config->allowed_memory_key_size;
+    as[6] = NULL;
 
     int len_of_ap = sizeof(ap)/sizeof(ap[0]);
     int len_of_as = sizeof(as)/sizeof(as[0]);
@@ -77,7 +87,7 @@ CONFIG *parseINI(char *inipath) {
 
     if(fp) {
         char *cont = calloc(sz, sizeof(char));              
-        char *assign_value = calloc(10, sizeof(char));
+        char *assign_value = calloc(255, sizeof(char));
 
         while((*contents = getc(fp)) != EOF) {
             // set static var to check did comment started
@@ -104,7 +114,7 @@ CONFIG *parseINI(char *inipath) {
             }
 
             //here we know, is statement comment or is assignment to configuration
-            if(!comment_started && !isspace(*contents)) {
+            if(!comment_started && !isspace(*contents) && *contents != rules.end_of_line) {
                 static int assigment = 0;
 
                 if(strcmp(contents,";") == 0) {
@@ -123,16 +133,25 @@ CONFIG *parseINI(char *inipath) {
                     
                     strcat(cont, contents);
 
-                    if(strlen(assign_value) > 1) {
+                    if(strlen(assign_value) > 0) {
                         char *value = strdup(assign_value);
                         int i = 0;
                         for(; i <= len_of_ap; i++) {
-                            if(!strcmp(cont,ap[i])) {
+                            if(strncmp(cont,ap[i],(strlen(cont) - 1)) == 0) {
                                 int *ptr = as[i];
-                                *ptr = atoi(value);
+
+                                int convert = atoi(value);
+                                if(!convert) {
+                                    setEnvironment(ap[i],assign_value);
+                                } else {
+                                    *ptr = convert;
+                                }
 
                                 clearMemoryOnAssigment(cont, assign_value);
+                                i = len_of_ap;
+
                             }
+                            
                         }
                         // free strdup
                         free(value);
@@ -144,6 +163,9 @@ CONFIG *parseINI(char *inipath) {
         fclose(fp); 
         
         // free memory
+        cont = NULL;
+        assign_value = NULL;
+        
         free(cont);
         free(assign_value);
     }

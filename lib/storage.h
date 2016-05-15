@@ -21,9 +21,5 @@ void memory_size_used(STORAGE *storage, int memory);
 int safe_member_initialize(STORAGE *storage, int member);
 int find_available_index(STORAGE *storage);
 
-//void lost_index_member_init(STORAGE *storage, int index);
-//int available_lost_index(STORAGE *storage);
-//void waste_lost_index(STORAGE *storage, int index);
-
 #endif	/* STORAGE_H */
 

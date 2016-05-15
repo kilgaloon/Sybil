@@ -4,8 +4,13 @@
 
 #include "../config.h"
 #include "storage.h"
+#include "log.h"
 
-
+/**
+ * Initialize new in-memory storage and assign configurations to it
+ * @param STORAGE *storage
+ * @param CONFIG *config
+ */
 void storage_init(STORAGE *storage, CONFIG *config) {
     // in next steps we will set storage settings
     storage->size = 0;
@@ -15,28 +20,20 @@ void storage_init(STORAGE *storage, CONFIG *config) {
     storage->allowed_memory_size = config->allowed_memory_size * 1024; // get this from ini
     
     // allocating memory for storage data
-    storage->data = calloc(storage->allowed_memory_size, sizeof(char));
-    // check did we succeeded to allocate memory for storage data
+    storage->data = calloc(storage->allowed_memory_size, sizeof(char ***));
+    //check did we succeeded to allocate memory for storage data
     if(storage->data == 0) {
         error_log("Failed to allocate memory for storage data.");
     }
     
-    // lost indexes are used for rebuilding database when indexes are lost
-    // e.x: When someone delete key, that place in storage stays empty
-    // its not neccessary to append more keys to storage
-    // we can just use deleted spot to repopulate with another key
-//    storage->lost_index = calloc(255, sizeof(int));
-//    storage->lost_index_size = 0;
-//    if(storage->lost_index == 0) {
-//        error_log("Failed to allocate memory for lost index data.");
-//    }
-    
-    
-    // when we acquire all configuration we clear that memory
-    free(config);
-
 }
 
+/**
+ * Setting key in storage
+ * @param STORAGE *storage
+ * @param char *key
+ * @param char *value
+ */
 void set_key(STORAGE *storage, char *key, char *value) { 
     // check is there enough memory to be stored
     // and should we proceed with insertion of new key
@@ -63,13 +60,12 @@ void set_key(STORAGE *storage, char *key, char *value) {
     }
 }
 
-// get key from storage linear search
 /**
- * 
- * @param storage
- * @param key
- * @param prnt
- * @return 
+ * Function tries to find provided key 
+ * @param STORAGE *storage 
+ * @param char *key
+ * @param int *prnt
+ * @return int
  */
 int get_key(STORAGE *storage, char *key, int prnt) {
     int i;
@@ -89,7 +85,8 @@ int get_key(STORAGE *storage, char *key, int prnt) {
             }
         }
     }
-
+    
+    return 0;
 }
 
 int find_available_index(STORAGE *storage) {
@@ -108,9 +105,6 @@ int find_available_index(STORAGE *storage) {
     }
     
     return 0;
-//    } else {
-//        return 1;
-//    }
 }
 
 // get key from storage linear search
@@ -135,7 +129,10 @@ int update_key(STORAGE *storage, char *key, char *value) {
         }
     } else {
         error_log("No memory left to update key.");
+        
     }
+    
+    return 0;
 }
 
 // get key from storage linear search
@@ -187,7 +184,7 @@ void memory_size_used(STORAGE *storage, int memory) {
 int safe_member_initialize(STORAGE *storage, int member) {       
     
     // allocating memory for storage data member
-    storage->data[member] = malloc(storage->allowed_memory_key_size + storage->allowed_memory_value_size * sizeof(char));
+    storage->data[member] = calloc(storage->allowed_memory_key_size + storage->allowed_memory_value_size, sizeof(char));
     // checking is memory allocated for storage data member
     if(storage->data[member] != NULL) {
         // checking is memory allocated for storage data member
