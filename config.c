@@ -25,4 +25,7 @@ void setEnvironment(char *var, char *value) {
     strcat(env,s);
     
     setenv(env,value,1);
+    
+    free(env);
+    free(s);
 }
